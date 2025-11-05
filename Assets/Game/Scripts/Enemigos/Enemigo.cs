@@ -41,6 +41,8 @@ public class Enemigo : MonoBehaviour
 
         BuscarJugador();
 
+        Debug.Log("Jugador detectado: " + jugadorDetectado);
+
         if (jugadorDetectado)
         {
             SeguirJugador();
@@ -63,7 +65,6 @@ public class Enemigo : MonoBehaviour
 
     private void EjecutarAtaque()
     {
-        Debug.Log($"Distancia al jugador: {Vector3.Distance(transform.position, jugador.position)}, En Cooldown: {enCooldownAtaque}");
         if (Vector3.Distance(transform.position, jugador.position) < 2f && !enCooldownAtaque)
         {
             controladorAnimacion.SetTrigger("Attack");
@@ -79,11 +80,14 @@ public class Enemigo : MonoBehaviour
         Debug.Log("Enemigo recibio " + cantidadDano + " de dano.");
         controladorAnimacion.SetTrigger("Damage");
         puntosVida -= cantidadDano;
-        StartCoroutine(PausarMovimiento(0.5f));
 
         if (puntosVida <= 0)
         {
             StartCoroutine(ProcesarMuerte());
+        }
+        else
+        {
+            StartCoroutine(PausarMovimiento(0.5f));
         }
     }
 

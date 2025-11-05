@@ -96,7 +96,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bf1c56cd59ea964386a8d004f5972de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  "da\xF1oProyectil": 0
+  prefabMarcaBala: {fileID: 8401977033109394357, guid: 808b7c986420ee344a99afd54d894d72, type: 3}
+  danoProyectil: 0
 --- !u!23 &6854060742452760591
 MeshRenderer:
   m_ObjectHideFlags: 0
