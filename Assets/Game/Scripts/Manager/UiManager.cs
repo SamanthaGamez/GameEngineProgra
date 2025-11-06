@@ -1,60 +1,44 @@
+using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class UiManager : MonoBehaviour
 {
-    public static UiManager instance;
+    static public UiManager instance;
 
-    public TextMeshProUGUI textoBalas;
-    public Image imagenArma;
+    public TextMeshProUGUI fpsText;
+    public TextMeshProUGUI enemiesRemainingText;
+
+    private float unscaledDeltaTimeAccumulator;
 
     private void Awake()
     {
-        if (instance == null)
+        if (instance != null && instance != this)
         {
-            instance = this;
-            DontDestroyOnLoad(this.gameObject);
-            SceneManager.sceneLoaded += OnSceneLoaded;
+            Destroy(gameObject);
         }
         else
         {
-            Destroy(this.gameObject);
+            instance = this;
+            DontDestroyOnLoad(gameObject);
         }
     }
 
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    public void UpdateEnemiesTxt(int enemiesCount)
     {
-        if (scene.name != "EscenaFinal")
-        {
-            GameObject textoBalasObj = GameObject.FindGameObjectWithTag("TextoBalasUI");
-            if (textoBalasObj != null)
-            {
-                textoBalas = textoBalasObj.GetComponent<TextMeshProUGUI>();
-            }
-            else
-            {
-                Debug.LogWarning("UiManager: No se encontró ningún objeto con el tag 'TextoBalasUI' en la escena.");
-            }
-
-            GameObject imagenArmaObj = GameObject.FindGameObjectWithTag("ImagenArmaUI");
-            if (imagenArmaObj != null)
-            {
-                imagenArma = imagenArmaObj.GetComponent<Image>();
-            }
-            else
-            {
-                Debug.LogWarning("UiManager: No se encontró ningún objeto con el tag 'ImagenArmaUI' en la escena.");
-            }
-            
-            if (imagenArma != null) imagenArma.sprite = null;
-            if (textoBalas != null) textoBalas.text = "";
-        }
+        enemiesRemainingText.text = "Enemigos restantes " + enemiesCount;
     }
 
-    private void OnDestroy()
+    private void Update()
     {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        CalculateFPS();
+    }
+
+    private void CalculateFPS()
+    {
+        unscaledDeltaTimeAccumulator += (Time.unscaledDeltaTime - unscaledDeltaTimeAccumulator) * 0.1f;
+        int fps = Mathf.CeilToInt(1f / unscaledDeltaTimeAccumulator);
+        fpsText.text = "FPS: " + fps;
     }
 }

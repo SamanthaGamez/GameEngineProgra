@@ -13,7 +13,7 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float tiempoSuavizado = 5f;
 
     private float rotX = 0f;
-    private float velocidadRotX = 0f;
+    private float velocidadRotX = 0f; 
     private float velocidadRotY = 0f;
     private float rotacionActualX = 0f;
     private float rotacionActualY = 0f;

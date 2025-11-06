@@ -1,88 +1,108 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(PlayerMove))]
 public class PlayerMove : MonoBehaviour
 {
-    [Header("Sistema de Movimiento")]
-    private CharacterController controladorPersonaje;
-    private float inputHorizontal;
-    private float inputVertical;
+    public static PlayerMove instance;
 
-    [SerializeField] private float rapidezMovimiento;
+    private CharacterController characterController;
 
-    [Header("Gravedad y Salto")]
-    [SerializeField] private float fuerzaGravedad = -9.8f;
-    [SerializeField] private Transform verificadorSuelo;
-    [SerializeField] private float potenciaSalto;
+    public float baseMoveSpeed;
+    public float currentSpeed;
+    public float cameraSensitivity;
+    private bool isRunning;
 
-    private Vector3 velocidadVertical;
-    [SerializeField] private bool tocandoSuelo;
-    [SerializeField] private float radioDeteccionSuelo;
-    [SerializeField] private LayerMask mascaraSuelo;
+    public float gravityValue = -9.81f;
+    private float verticalVelocity = 0f;
+    public float groundRayRange;
+    public float jumpStrength;
+    public LayerMask groundMask;
 
-    public int puntosVida = 100;
+    [SerializeField] private Transform playerCamera;
+
+    private float rotationY;
+    private float rotationX;
+
 
     private void Awake()
     {
-        controladorPersonaje = GetComponent<CharacterController>();
-    }
-
-    private void Update()
-    {
-        if (controladorPersonaje != null && controladorPersonaje.enabled)
+        if (instance != null && instance != this)
         {
-            ProcesarMovimiento();
-            AplicarGravedad();
+            Destroy(this.gameObject);
+            return;
         }
 
-        if (Input.GetKeyDown(KeyCode.F9))
-        {
-            GameManager.Instance.CargarGuardado("Save1");
-        }
+        instance = this;
+        DontDestroyOnLoad(this.gameObject);
+
+        characterController = GetComponent<CharacterController>();
     }
 
-    private void ProcesarMovimiento()
+    void Start()
     {
-        inputHorizontal = Input.GetAxis("Horizontal") * rapidezMovimiento * Time.deltaTime;
-        inputVertical = Input.GetAxis("Vertical") * rapidezMovimiento * Time.deltaTime;
-
-        Vector3 direccionMovimiento = transform.right * inputHorizontal + transform.forward * inputVertical;
-        controladorPersonaje.Move(direccionMovimiento);
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
-    public void RecibirDano(int cantidadDano)
+    void Update()
     {
-        puntosVida -= cantidadDano;
+        HandlePlayerMovement();
+        HandlePlayerControl();
+        ApplyGravity();
 
-        if (puntosVida <= 0)
+        if (Input.GetKey(KeyCode.Space) && IsGrounded())
         {
-            puntosVida = 0;
-            GameManager.Instance.Derrota();
-            if(GetComponent<CharacterController>() != null) GetComponent<CharacterController>().enabled = false;
-            this.enabled = false; 
+            Jump();
         }
     }
 
-    private void AplicarGravedad()
+    private void Jump()
     {
-        velocidadVertical.y += fuerzaGravedad * Time.deltaTime;
-
-        if (EstaEnSuelo() && velocidadVertical.y > 0)
-        {
-            velocidadVertical.y = 0;
-        }
-
-        if (Input.GetKey(KeyCode.Space) && EstaEnSuelo())
-        {
-            AudioManager.instance.Play("Jump");
-            velocidadVertical.y = Mathf.Sqrt(potenciaSalto * fuerzaGravedad * -2);
-        }
-
-        controladorPersonaje.Move(velocidadVertical * Time.deltaTime);
+        verticalVelocity = jumpStrength;
     }
 
-    private bool EstaEnSuelo()
+    private bool IsGrounded()
     {
-        return Physics.CheckSphere(verificadorSuelo.position, radioDeteccionSuelo, mascaraSuelo);
+        return Physics.Raycast(transform.position, Vector3.down, groundRayRange, groundMask);
+    }
+    private void HandlePlayerMovement()
+    {
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
+        Vector3 direction = transform.right * horizontalInput + transform.forward * verticalInput;
+        characterController.Move(direction * currentSpeed * Time.deltaTime);
+    }
+
+    private void HandlePlayerControl()
+    {
+        UpdateCameraMovement();
+    }
+
+    private void ApplyGravity()
+    {
+        verticalVelocity += gravityValue * Time.deltaTime;
+        characterController.Move(Vector3.up * verticalVelocity * Time.deltaTime);
+    }
+
+    private void UpdateCameraMovement()
+    {
+        float mouseX = Input.GetAxis("Mouse X") * cameraSensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * cameraSensitivity * Time.deltaTime;
+
+        rotationX = Mathf.Clamp(rotationX - mouseY, -90f, 90f);
+        playerCamera.localRotation = Quaternion.Euler(rotationX, 0, 0);
+
+        rotationY += mouseX;
+        transform.rotation = Quaternion.Euler(0, rotationY, 0);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (characterController == null) characterController = GetComponent<CharacterController>();
+        if (characterController == null) return;
+
+        Gizmos.color = IsGrounded() ? Color.green : Color.red;
+        Gizmos.DrawRay(transform.position, Vector3.down * groundRayRange);
     }
 }
