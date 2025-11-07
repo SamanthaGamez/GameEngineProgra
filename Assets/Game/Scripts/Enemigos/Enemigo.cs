@@ -27,6 +27,10 @@ public class Enemigo : MonoBehaviour
 
         if (actualHitPoints <= 0)
         {
+            if (AudioManager.instance != null)
+            {
+                AudioManager.instance.Play("MuerteEnemigo");
+            }
             EnemigoManager.instance.EnemyDeath(gameObject);
         }
     }

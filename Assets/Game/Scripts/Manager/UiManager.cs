@@ -9,7 +9,7 @@ public class UiManager : MonoBehaviour
 
     public TextMeshProUGUI fpsText;
     public TextMeshProUGUI enemiesRemainingText;
-
+    
     private float unscaledDeltaTimeAccumulator;
 
     private void Awake()

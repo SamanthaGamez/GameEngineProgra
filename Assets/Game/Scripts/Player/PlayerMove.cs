@@ -55,6 +55,11 @@ public class PlayerMove : MonoBehaviour
         {
             Jump();
         }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            PlayShootSound();
+        }
     }
 
     private void Jump()
@@ -95,6 +100,14 @@ public class PlayerMove : MonoBehaviour
 
         rotationY += mouseX;
         transform.rotation = Quaternion.Euler(0, rotationY, 0);
+    }
+
+    private void PlayShootSound()
+    {
+        if (AudioManager.instance != null)
+        {
+            AudioManager.instance.Play("DisparoJugador");
+        }
     }
 
     private void OnDrawGizmos()
